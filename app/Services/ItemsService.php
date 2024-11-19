@@ -124,6 +124,10 @@ class ItemsService
 
         Browsershot::html($html)
             ->setChromePath('/usr/bin/chromium-browser')
+            ->addChromiumArguments([
+                'disable-dev-shm-usage',
+                'single-process',
+            ])
             ->noSandbox()
             ->newHeadless()
             ->setOption('format', 'A4')
