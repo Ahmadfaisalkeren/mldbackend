@@ -90,9 +90,8 @@ class ItemsController extends Controller
     {
         $pdfPath = $this->itemsService->generateItemsPDF();
 
-        return response()->file($pdfPath, [
+        return response()->download($pdfPath, 'items_report.pdf', [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="items_report.pdf"',
         ]);
     }
 }

@@ -123,12 +123,13 @@ class ItemsService
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
 
         Browsershot::html($html)
+            ->setChromePath('/usr/bin/chromium-browser')
             ->noSandbox()
             ->newHeadless()
             ->setOption('format', 'A4')
             ->margins(10, 10, 10, 10)
             ->waitUntilNetworkIdle()
-            ->setTimeout(120)
+            ->setTimeout(3000)
             ->showBackground()
             ->noSandbox()
             ->enableImages()
