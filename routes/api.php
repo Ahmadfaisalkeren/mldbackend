@@ -10,6 +10,7 @@ use App\Http\Controllers\API\TransactionController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/{id}', [AuthController::class, 'user']);
+Route::get('/items/pdf', [ItemsController::class, 'generateItemsPDF']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -23,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/item/{id}', [ItemsController::class, 'edit']);
     Route::put('/item/{id}', [ItemsController::class, 'update']);
     Route::delete('/item/{id}', [ItemsController::class, 'destroy']);
+
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/ongoing', [TransactionController::class, 'getOngoingTransactions']);
     Route::post('/transaction/checkout', [TransactionController::class, 'checkout']);

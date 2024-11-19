@@ -85,4 +85,14 @@ class ItemsController extends Controller
             'message' => 'Item Deleted Successfully',
         ], 200);
     }
+
+    public function generateItemsPDF()
+    {
+        $pdfPath = $this->itemsService->generateItemsPDF();
+
+        return response()->file($pdfPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="items_report.pdf"',
+        ]);
+    }
 }

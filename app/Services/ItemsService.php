@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Items;
 use SimpleSoftwareIO\QrCode\Facades\QrCode; // Import the QR Code package
 use Illuminate\Support\Facades\Storage;
+use Spatie\Browsershot\Browsershot;
 
 /**
  * Class ItemsService.
@@ -111,5 +112,31 @@ class ItemsService
         if ($imagePath) {
             Storage::disk('public')->delete($imagePath);
         }
+    }
+
+    public function generateItemsPDF()
+    {
+        $items = $this->getItems();
+
+        $html = view('items_pdf', compact('items'))->render();
+
+        $pdfPath = storage_path('app/public/reports/items_report.pdf');
+
+        Browsershot::html($html)
+            ->noSandbox()
+            ->newHeadless()
+            ->setOption('format', 'A4')
+            ->margins(10, 10, 10, 10)
+            ->waitUntilNetworkIdle()
+            ->setTimeout(120)
+            ->showBackground()
+            ->noSandbox()
+            ->enableImages()
+            ->enableDebugging()
+            ->showBrowserHeaderAndFooter()
+            ->writeOptionsToFile()
+            ->save($pdfPath);
+
+        return $pdfPath;
     }
 }
