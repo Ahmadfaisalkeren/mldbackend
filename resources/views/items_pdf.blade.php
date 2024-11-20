@@ -18,6 +18,7 @@
                 <th class="px-4 py-2">Name</th>
                 <th class="px-4 py-2">Category</th>
                 <th class="px-4 py-2">Image</th>
+                <th class="px-4 py-2">QR Code</th>
                 <th class="px-4 py-2">Quantity</th>
             </tr>
         </thead>
@@ -28,7 +29,11 @@
                     <td class="border px-4 py-2">{{ $item->name }}</td>
                     <td class="border px-4 py-2">{{ $item->category->category_name }}</td>
                     <td class="border px-4 py-2">
-                        <img src="{{ asset('storage/' . $item->image) }}" alt="Item Image"
+                        <img src="{{ public_path('storage/' . $item->image) }}" alt="Item Image"
+                            class="w-20 h-20 object-cover">
+                    </td>
+                    <td class="border px-4 py-2">
+                        <img src="{{ public_path('storage/' . $item->qrcode) }}" alt="Item Image"
                             class="w-20 h-20 object-cover">
                     </td>
                     <td class="border px-4 py-2">{{ $item->quantity }}</td>

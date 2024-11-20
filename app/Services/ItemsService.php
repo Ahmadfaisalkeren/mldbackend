@@ -123,7 +123,7 @@ class ItemsService
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
 
         Browsershot::html($html)
-            ->setChromePath('/usr/bin/chromium-browser')
+            ->setChromePath('/usr/bin/chromium')
             ->addChromiumArguments([
                 'disable-dev-shm-usage',
                 'single-process',
