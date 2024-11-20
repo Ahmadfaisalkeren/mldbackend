@@ -123,7 +123,7 @@ class ItemsService
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
 
         Browsershot::html($html)
-            ->setChromePath('/snap/bin/chromium')
+            ->setChromePath('/usr/bin/chromium-browser')
             ->addChromiumArguments([
                 'disable-dev-shm-usage',
                 'single-process',
@@ -140,6 +140,7 @@ class ItemsService
             ->enableDebugging()
             ->showBrowserHeaderAndFooter()
             ->writeOptionsToFile()
+            ->debug()
             ->save($pdfPath);
 
         return $pdfPath;
