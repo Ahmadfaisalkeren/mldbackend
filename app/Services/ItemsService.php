@@ -123,24 +123,29 @@ class ItemsService
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
 
         Browsershot::html($html)
-            ->setChromePath('/snap/bin/chromium')
+            // Correctly set the executable path for Chromium
+            ->setOption('executablePath', '/snap/bin/chromium')
+            // Add the necessary Chromium arguments
             ->addChromiumArguments([
                 'disable-dev-shm-usage',
                 'single-process',
+                '--no-sandbox',  // Ensuring Chromium runs without sandboxing in Snap
             ])
-            ->noSandbox()
-            ->newHeadless()
+            // Set PDF formatting and margins
             ->setOption('format', 'A4')
             ->margins(10, 10, 10, 10)
+            // Wait until network is idle (optional, can be adjusted)
             ->waitUntilNetworkIdle()
+            // Set timeout for page load
             ->setTimeout(3000)
+            // Make sure the background is shown
             ->showBackground()
-            ->noSandbox()
+            // Enable images and debugging (optional)
             ->enableImages()
             ->enableDebugging()
+            // Show browser header and footer if needed
             ->showBrowserHeaderAndFooter()
-            ->writeOptionsToFile()
-            ->debug()
+            // Save the PDF to the specified path
             ->save($pdfPath);
 
         return $pdfPath;
