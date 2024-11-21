@@ -118,35 +118,24 @@ class ItemsService
     {
         $items = $this->getItems();
 
+        // Render the HTML for the PDF
         $html = view('items_pdf', compact('items'))->render();
 
+        // Define the path where the PDF will be saved
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
 
+        // Generate the PDF using Browsershot
         Browsershot::html($html)
-            // Correctly set the executable path for Chromium
-            ->setOption('executablePath', '/snap/bin/chromium')
-            // Add the necessary Chromium arguments
+            ->setOption('executablePath', '/usr/bin/google-chrome') // Set Google Chrome executable path
             ->addChromiumArguments([
-                'disable-dev-shm-usage',
-                'single-process',
-                '--no-sandbox',  // Ensuring Chromium runs without sandboxing in Snap
+                '--disable-dev-shm-usage',
+                '--no-sandbox', // Required for environments like VPS
             ])
-            // Set PDF formatting and margins
-            ->setOption('format', 'A4')
-            ->margins(10, 10, 10, 10)
-            // Wait until network is idle (optional, can be adjusted)
-            ->waitUntilNetworkIdle()
-            // Set timeout for page load
-            ->setTimeout(3000)
-            // Make sure the background is shown
-            ->showBackground()
-            // Enable images and debugging (optional)
-            ->enableImages()
-            ->enableDebugging()
-            // Show browser header and footer if needed
-            ->showBrowserHeaderAndFooter()
-            // Save the PDF to the specified path
-            ->save($pdfPath);
+            ->format('A4') // Specify PDF page size
+            ->margins(10, 10, 10, 10) // Set PDF margins
+            ->waitUntilNetworkIdle() // Wait until the page is fully loaded
+            ->showBackground() // Include background colors/images
+            ->save($pdfPath); // Save the PDF to the specified path
 
         return $pdfPath;
     }
