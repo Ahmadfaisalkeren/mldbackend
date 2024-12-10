@@ -18,6 +18,12 @@ class Transactions extends Model
         'status',
     ];
 
+    protected $casts = [
+        'checkout_date' => 'datetime',
+        'expected_return_date' => 'datetime',
+        'actual_return_date' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

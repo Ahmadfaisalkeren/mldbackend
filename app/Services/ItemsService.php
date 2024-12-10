@@ -118,24 +118,19 @@ class ItemsService
     {
         $items = $this->getItems();
 
-        // Render the HTML for the PDF
         $html = view('items_pdf', compact('items'))->render();
 
-        // Define the path where the PDF will be saved
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
-
-        // Generate the PDF using Browsershot
         Browsershot::html($html)
-            ->setOption('executablePath', '/usr/bin/google-chrome') // Set Google Chrome executable path
+            ->setOption('executablePath', '/usr/bin/google-chrome')
             ->addChromiumArguments([
                 '--disable-dev-shm-usage',
-                '--no-sandbox', // Required for environments like VPS
+                '--no-sandbox',
             ])
-            ->format('A4') // Specify PDF page size
-            ->margins(10, 10, 10, 10) // Set PDF margins
-            ->waitUntilNetworkIdle() // Wait until the page is fully loaded
-            ->showBackground() // Include background colors/images
-            ->save($pdfPath); // Save the PDF to the specified path
+            ->format('A4')
+            ->waitUntilNetworkIdle()
+            ->showBackground()
+            ->save($pdfPath);
 
         return $pdfPath;
     }

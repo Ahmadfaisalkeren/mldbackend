@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\API;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Transaction\StoreTransactionRequest;
-use App\Services\TransactionService;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Http\Controllers\Controller;
+use App\Services\TransactionService;
+use App\Http\Requests\Transaction\StoreTransactionRequest;
 
 class TransactionController extends Controller
 {
@@ -93,6 +94,38 @@ class TransactionController extends Controller
                 'status' => 500,
                 'message' => 'Transaction Return Failed',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generateTransactionsPDF(Request $request)
+    {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        if (($startDate && $endDate) && (!Carbon::parse($startDate)->isValid() || !Carbon::parse($endDate)->isValid())) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Invalid date format.',
+            ], 400);
+        }
+
+        try {
+            if ($startDate && $endDate) {
+                $pdfPath = $this->transactionService->generateFilteredTransactionsPDF($startDate, $endDate);
+            } else {
+                $pdfPath = $this->transactionService->generateAllTransactionsPDF();
+            }
+
+            return response()->file($pdfPath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="transactions_report.pdf"',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error generating PDF.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use Exception;
+use Carbon\Carbon;
 use App\Models\Cart;
 use App\Models\Transactions;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
-use Exception;
-use Carbon\Carbon;
+use Spatie\Browsershot\Browsershot;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -23,7 +24,7 @@ class TransactionService
     }
     public function getTransactions()
     {
-        $transactions = Transactions::with('user')->get();
+        $transactions = Transactions::with('user')->orderBy('created_at', 'desc')->get();
 
         return $transactions;
     }
@@ -102,7 +103,6 @@ class TransactionService
     {
         $transaction = Transactions::findOrFail($transactionId);
 
-        // Optional: Check if transaction status is eligible for return
         if ($transaction->status !== 'Checkout') {
             throw new Exception("Transaction cannot be returned because it is not in a 'Checkout' status.");
         }
@@ -120,5 +120,60 @@ class TransactionService
             DB::rollBack();
             throw new Exception("Failed to update return status: " . $e->getMessage());
         }
+    }
+
+    public function generateFilteredTransactionsPDF($startDate, $endDate)
+    {
+        $transactions = Transactions::with('user')
+            ->whereBetween('checkout_date', [$startDate, $endDate])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $html = view('transactions/transaction_pdf', compact('transactions'))->render();
+
+        $pdfPath = storage_path('app/public/reports/transactions_report.pdf');
+
+        try {
+            Browsershot::html($html)
+                ->setOption('executablePath', '/usr/bin/google-chrome')
+                ->addChromiumArguments([
+                    '--disable-dev-shm-usage',
+                    '--no-sandbox',
+                ])
+                ->format('A4')
+                ->waitUntilNetworkIdle()
+                ->showBackground()
+                ->save($pdfPath);
+        } catch (\Exception $e) {
+            throw new \Exception("Error generating PDF: " . $e->getMessage());
+        }
+
+        return $pdfPath;
+    }
+
+    public function generateAllTransactionsPDF()
+    {
+        $transactions = Transactions::with('user')->orderBy('created_at', 'desc')->get();
+
+        $html = view('transactions/transaction_pdf', compact('transactions'))->render();
+
+        $pdfPath = storage_path('app/public/reports/transactions_report.pdf');
+
+        try {
+            Browsershot::html($html)
+                ->setOption('executablePath', '/usr/bin/google-chrome')
+                ->addChromiumArguments([
+                    '--disable-dev-shm-usage',
+                    '--no-sandbox',
+                ])
+                ->format('A4')
+                ->waitUntilNetworkIdle()
+                ->showBackground()
+                ->save($pdfPath);
+        } catch (\Exception $e) {
+            throw new \Exception("Error generating PDF: " . $e->getMessage());
+        }
+
+        return $pdfPath;
     }
 }

@@ -11,6 +11,7 @@ use App\Http\Controllers\API\TransactionController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/{id}', [AuthController::class, 'user']);
 Route::get('/items/pdf', [ItemsController::class, 'generateItemsPDF']);
+Route::get('/transactions/pdf', [TransactionController::class, 'generateTransactionsPDF']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
