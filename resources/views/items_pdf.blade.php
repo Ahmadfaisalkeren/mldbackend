@@ -18,7 +18,7 @@
 <body class="bg-gray-100 text-gray-900 font-[Poppins]">
     <div class="bg-gray-800 text-white text-center py-4">
         <h1 class="text-3xl font-bold">Items Report</h1>
-        <p class="text-sm mt-1">Generated on {{ now()->format('Y-m-d H:i:s') }}</p>
+        <p class="text-sm mt-1">Generated on {{ now()->format('Y-m-d') }}</p>
     </div>
 
     <div class="">

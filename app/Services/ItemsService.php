@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Items;
-use SimpleSoftwareIO\QrCode\Facades\QrCode; // Import the QR Code package
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Browsershot\Browsershot;
 
@@ -32,7 +32,6 @@ class ItemsService
 
         $itemData['item_code'] = $this->generateUniqueItemCode();
 
-        // Generate the QR code based on the item code
         $qrCodePath = $this->generateAndStoreQRCode($itemData['item_code']);
         $itemData['qrcode'] = $qrCodePath;
 
@@ -122,7 +121,7 @@ class ItemsService
 
         $pdfPath = storage_path('app/public/reports/items_report.pdf');
         Browsershot::html($html)
-            ->setOption('executablePath', '/usr/bin/google-chrome')
+            ->setOption('executablePath', 'C:\Program Files\Google\Chrome\Application\chrome.exe')
             ->addChromiumArguments([
                 '--disable-dev-shm-usage',
                 '--no-sandbox',
