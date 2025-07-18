@@ -29,18 +29,6 @@ class ItemsController extends Controller
         ], 200);
     }
 
-    public function totalItems()
-    {
-        $totalItems = $this->itemsService->getTotalItems();
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Total Items Fetched Successfully',
-            'totalItems' => $totalItems,
-        ], 200);
-    }
-
-
     public function store(StoreItemRequest $request)
     {
         $item = $this->itemsService->storeItem($request->validated());
@@ -89,6 +77,24 @@ class ItemsController extends Controller
     public function generateItemsPDF()
     {
         $pdfPath = $this->itemsService->generateItemsPDF();
+
+        if (!file_exists($pdfPath)) {
+            abort(500, 'PDF file was not generated');
+        }
+
+        return response()->file($pdfPath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="items_report.pdf"',
+        ]);
+    }
+
+    public function generateItemStickers()
+    {
+        $pdfPath = $this->itemsService->generateItemStickers();
+
+        if (!file_exists($pdfPath)) {
+            abort(500, 'PDF file was not generated');
+        }
 
         return response()->file($pdfPath, [
             'Content-Type' => 'application/pdf',

@@ -18,8 +18,9 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id');
             $table->text('description')->nullable();
             $table->string('size');
-            $table->integer('quantity');
-            $table->string('image');
+            $table->integer('stock');
+            $table->json('images');
+            $table->string('qrcode');
             $table->timestamps();
 
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');

@@ -40,17 +40,6 @@ class TransactionController extends Controller
         ], 200);
     }
 
-    public function totalTransactions()
-    {
-        $totalTransactions = $this->transactionService->getTotalTransactions();
-
-        return response()->json([
-            'status' => 200,
-            'message' => "Total Transactions Fetched Successfully",
-            'totalTransactions' => $totalTransactions,
-        ], 200);
-    }
-
     public function checkout(StoreTransactionRequest $request)
     {
         try {

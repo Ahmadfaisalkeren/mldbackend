@@ -18,7 +18,7 @@
 <body class="bg-gray-100 text-gray-900 font-[Poppins]">
     <div class="bg-gray-800 text-white text-center py-4">
         <h1 class="text-3xl font-bold">Items Report</h1>
-        <p class="text-sm mt-1">Generated on {{ now()->format('Y-m-d') }}</p>
+        <p class="text-sm mt-1">Generated on {{ now()->format('F, d Y') }}</p>
     </div>
 
     <div class="">
@@ -26,11 +26,15 @@
             <thead>
                 <tr class="bg-gray-100">
                     <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">No</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300 w-32">Item Code</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Name</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Image</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300 w-32">Item
+                        Code</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Item Name</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Size</th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Stock
+                    </th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Images
+                    </th>
                     <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">QR Code</th>
-                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Quantity</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,15 +47,26 @@
                             </span>
                         </td>
                         <td class="px-4 py-2 text-sm border border-gray-300">{{ $item->name }}</td>
-                        <td class="px-4 py-2 border border-gray-300">
-                            <img src="{{ public_path('storage/' . $item->image) }}" alt="Item Image"
-                                class="w-16 h-16 object-cover mx-auto rounded-md shadow">
+                        <td class="px-4 py-2 text-sm border border-gray-300">{{ $item->size }}
                         </td>
-                        <td class="px-4 py-2 border border-gray-300">
-                            <img src="{{ public_path('storage/' . $item->qrcode) }}" alt="QR Code"
-                                class="w-16 h-16 object-cover mx-auto shadow">
+                        <td class="px-4 py-2 text-sm border border-gray-300">
+                            {{ $item->stock }}</td>
+                        <td class="px-4 py-2 text-sm border border-gray-300">
+                            <div class="flex gap-1 flex-wrap">
+                                @foreach ($item->images ?? [] as $image)
+                                    <img src="{{ public_path('storage/' . $image) }}" alt="Image"
+                                        style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">
+                                @endforeach
+                            </div>
                         </td>
-                        <td class="px-4 py-2 text-sm border border-gray-300 text-center">{{ $item->quantity }}</td>
+                        <td class="px-4 py-2 text-sm border border-gray-300 text-center">
+                            @if ($item->qrcode)
+                                <img src="{{ public_path('storage/' . $item->qrcode) }}" alt="QR Code"
+                                    style="width: 60px; height: 60px; object-fit: cover;">
+                            @else
+                                N/A
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

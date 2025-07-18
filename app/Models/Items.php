@@ -11,14 +11,17 @@ class Items extends Model
 
     protected $table = 'items';
     protected $guarded = [];
+    protected $casts = [
+        'images' => 'array',
+    ];
     protected $fillable = [
         'item_code',
         'name',
         'category_id',
         'description',
         'size',
-        'quantity',
-        'image',
+        'stock',
+        'images',
         'qrcode',
     ];
 

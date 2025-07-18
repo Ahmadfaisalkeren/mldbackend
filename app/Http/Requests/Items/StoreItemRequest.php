@@ -26,8 +26,9 @@ class StoreItemRequest extends FormRequest
             'category_id' => 'required',
             'description' => 'required|string',
             'size' => 'required|string',
-            'quantity' => 'required|numeric',
-            'image' => 'required|mimes:png,jpg,jpeg|max:2048',
+            'stock' => 'required|numeric',
+            'images' => 'required|array|min:1',
+            'images.*' => 'mimes:png,jpg,jpeg|max:2048',
         ];
     }
 }

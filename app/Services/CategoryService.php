@@ -16,14 +16,6 @@ class CategoryService
         return $categories;
     }
 
-    public function getTotalCategories()
-    {
-        $totalCategories = Category::count();
-
-        return $totalCategories;
-    }
-
-
     public function storeCategory(array $categoryData)
     {
         $category = Category::create($categoryData);

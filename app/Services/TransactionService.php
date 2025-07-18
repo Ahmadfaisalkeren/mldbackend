@@ -5,6 +5,7 @@ namespace App\Services;
 use Exception;
 use Carbon\Carbon;
 use App\Models\Cart;
+use App\Models\Items;
 use App\Models\Transactions;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
@@ -29,13 +30,6 @@ class TransactionService
         return $transactions;
     }
 
-    public function getTotalTransactions()
-    {
-        $totalTransactions = Transactions::count();
-
-        return $totalTransactions;
-    }
-
     public function proceedToCheckout(array $transactionData)
     {
         $userId = Auth::id();
@@ -58,6 +52,20 @@ class TransactionService
             $cartItems = Cart::where('user_id', $userId)->get();
 
             foreach ($cartItems as $cartItem) {
+
+                $item = Items::find($cartItem->item_id);
+
+                if (!$item) {
+                    throw new Exception("Item not found");
+                }
+
+                if ($item->stock < $cartItem->quantity) {
+                    throw new Exception("Insufficient stock for item: " . $item->name);
+                }
+
+                $item->stock -= $cartItem->quantity;
+                $item->save();
+
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
                     'item_id' => $cartItem->item_id,
@@ -108,17 +116,33 @@ class TransactionService
         }
 
         DB::beginTransaction();
+
         try {
+
+            $transactionDetails = TransactionDetail::where('transaction_id', $transactionId)->get();
+
+            foreach ($transactionDetails as $detail) {
+                $item = Items::find($detail->item_id);
+
+                if (!$item) {
+                    throw new Exception("Item not found");
+                }
+
+                $item->stock += $detail->quantity;
+                $item->save();
+            }
+
             $transaction->actual_return_date = Carbon::now();
             $transaction->status = 'Returned';
 
             $transaction->save();
+
             DB::commit();
 
             return $transaction;
         } catch (Exception $e) {
             DB::rollBack();
-            throw new Exception("Failed to update return status: " . $e->getMessage());
+            throw new Exception("Failed to return items: " . $e->getMessage());
         }
     }
 
@@ -131,22 +155,22 @@ class TransactionService
 
         $html = view('transactions/transaction_pdf', compact('transactions'))->render();
 
-        $pdfPath = storage_path('app/public/reports/transactions_report.pdf');
+        collect(glob(storage_path('app/public/reports/transactions_report_*.pdf')))
+            ->each(fn($file) => @unlink($file));
 
-        try {
-            Browsershot::html($html)
-                ->setOption('executablePath', '/usr/bin/google-chrome')
-                ->addChromiumArguments([
-                    '--disable-dev-shm-usage',
-                    '--no-sandbox',
-                ])
-                ->format('A4')
-                ->waitUntilNetworkIdle()
-                ->showBackground()
-                ->save($pdfPath);
-        } catch (\Exception $e) {
-            throw new \Exception("Error generating PDF: " . $e->getMessage());
-        }
+        $filename = 'transactions_report_' . now()->format('Ymd_His') . '.pdf';
+        $pdfPath = storage_path("app/public/reports/{$filename}");
+
+        Browsershot::html($html)
+            ->setOption('executablePath', 'C:\Program Files\Google\Chrome\Application\chrome.exe')
+            ->addChromiumArguments([
+                '--disable-dev-shm-usage',
+                '--no-sandbox',
+            ])
+            ->format('A4')
+            ->waitUntilNetworkIdle()
+            ->showBackground()
+            ->save($pdfPath);
 
         return $pdfPath;
     }
@@ -157,22 +181,22 @@ class TransactionService
 
         $html = view('transactions/transaction_pdf', compact('transactions'))->render();
 
-        $pdfPath = storage_path('app/public/reports/transactions_report.pdf');
+        collect(glob(storage_path('app/public/reports/transactions_report_*.pdf')))
+            ->each(fn($file) => @unlink($file));
 
-        try {
-            Browsershot::html($html)
-                ->setOption('executablePath', '/usr/bin/google-chrome')
-                ->addChromiumArguments([
-                    '--disable-dev-shm-usage',
-                    '--no-sandbox',
-                ])
-                ->format('A4')
-                ->waitUntilNetworkIdle()
-                ->showBackground()
-                ->save($pdfPath);
-        } catch (\Exception $e) {
-            throw new \Exception("Error generating PDF: " . $e->getMessage());
-        }
+        $filename = 'transactions_report_' . now()->format('Ymd_His') . '.pdf';
+        $pdfPath = storage_path("app/public/reports/{$filename}");
+
+        Browsershot::html($html)
+            ->setOption('executablePath', 'C:\Program Files\Google\Chrome\Application\chrome.exe')
+            ->addChromiumArguments([
+                '--disable-dev-shm-usage',
+                '--no-sandbox',
+            ])
+            ->format('A4')
+            ->waitUntilNetworkIdle()
+            ->showBackground()
+            ->save($pdfPath);
 
         return $pdfPath;
     }

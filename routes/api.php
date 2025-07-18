@@ -5,13 +5,16 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CartsController;
 use App\Http\Controllers\API\ItemsController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\HomeController;
 use App\Http\Controllers\API\TransactionController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/{id}', [AuthController::class, 'user']);
 Route::get('/items/pdf', [ItemsController::class, 'generateItemsPDF']);
+Route::get('/items/stickers', [ItemsController::class, 'generateItemStickers']);
 Route::get('/transactions/pdf', [TransactionController::class, 'generateTransactionsPDF']);
+Route::get('/items', [ItemsController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -20,7 +23,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/category/{id}', [CategoryController::class, 'update']);
     Route::delete('/category/{id}', [CategoryController::class, 'destroy']);
 
-    Route::get('/items', [ItemsController::class, 'index']);
     Route::post('/item', [ItemsController::class, 'store']);
     Route::get('/item/{id}', [ItemsController::class, 'edit']);
     Route::put('/item/{id}', [ItemsController::class, 'update']);
@@ -34,7 +36,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart', [CartsController::class, 'addToCart']);
     Route::get('/cart', [CartsController::class, 'getCartItems']);
     Route::delete('/cart/{id}', [CartsController::class, 'removeFromCart']);
-    Route::get('/totalItems', [ItemsController::class, 'totalItems']);
-    Route::get('/totalCategories', [CategoryController::class, 'totalCategories']);
-    Route::get('/totalTransactions', [TransactionController::class, 'totalTransactions']);
+    Route::get('home/totals', [HomeController::class, 'getTotals']);
 });

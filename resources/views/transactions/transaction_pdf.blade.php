@@ -32,6 +32,8 @@
                     <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Checkout Date</th>
                     <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Expected Return Date
                     </th>
+                    <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Actual Return Date
+                    </th>
                     <th class="px-4 py-2 text-left text-sm font-semibold border-b border-gray-300">Status</th>
                 </tr>
             </thead>
@@ -49,6 +51,9 @@
                         </td>
                         <td class="px-4 py-2 text-sm border border-gray-300">
                             {{ $item->expected_return_date->format('F d Y') }}</td>
+                        <td class="px-4 py-2 text-sm border border-gray-300">
+                            {{ $item->actual_return_date ? $item->actual_return_date->format('F d Y') : '-' }}
+                        </td>
                         <td class="px-4 py-2 text-sm border border-gray-300 text-center">{{ $item->status }}</td>
                     </tr>
                 @endforeach
