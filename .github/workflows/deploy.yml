@@ -46,7 +46,7 @@ jobs:
             if [ ! -f .env ]; then
               cp .env.example .env
               sed -i "s|APP_KEY=.*|APP_KEY=${{ secrets.APP_KEY }}|" .env
-              sed -i "s|DB_HOST=.*|DB_HOST=mysql_server|" .env
+              sed -i "s|DB_HOST=.*|DB_HOST=global_mysql|" .env
               sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" .env
               sed -i '/^DB_PASSWORD=/p; s/^DB_PASSWORD=/DB_ROOT_PASSWORD=/' .env
               sed -i "s|APP_DEBUG=.*|APP_DEBUG=false|" .env
@@ -85,14 +85,14 @@ jobs:
               script: |
                 cd /var/www/mld/mldbackend
                 echo "Checking container statuses..."
-                docker ps | grep mysql_server
+                docker ps | grep global_mysql
                 docker ps | grep mldbackend
 
                 echo "Verifying network connectivity..."
-                docker exec mldbackend ping -c 2 mysql_server
+                docker exec mldbackend ping -c 2 global_mysql
 
                 echo "Testing MySQL connection..."
-                docker exec mysql_server mysqladmin ping -h localhost -u root -p${{ secrets.DB_PASSWORD }}
+                docker exec global_mysql mysqladmin ping -h localhost -u root -p${{ secrets.DB_PASSWORD }}
 
       - name: Create Database if Not Exists
         uses: appleboy/ssh-action@v0.1.10
@@ -101,7 +101,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            docker exec -i mysql_server mysql -u root -p${{ secrets.DB_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS mldbackend;"
+            docker exec -i global_mysql mysql -u root -p${{ secrets.DB_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS mldbackend;"
 
       - name: Wait for Database
         uses: appleboy/ssh-action@v0.1.10
@@ -113,7 +113,7 @@ jobs:
             cd /var/www/mld/mldbackend
             counter=0
             max_retries=15
-            until docker exec mysql_server mysql -u root -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" 2>/dev/null; do
+            until docker exec global_mysql mysql -u root -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" 2>/dev/null; do
               counter=$((counter + 1))
               [ $counter -eq $max_retries ] && exit 1
               echo "Waiting for database... Attempt $counter/$max_retries"
