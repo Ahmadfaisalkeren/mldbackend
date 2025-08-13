@@ -33,6 +33,7 @@ jobs:
           script: |
             cd /var/www/mld/mldbackend
             git pull origin main
+            docker compose down
             docker compose up -d --build
             docker compose exec -T mldbackend php artisan migrate --force
             docker compose exec -T mldbackend php artisan optimize:clear
