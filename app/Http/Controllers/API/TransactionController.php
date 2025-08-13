@@ -20,7 +20,7 @@ class TransactionController extends Controller
 
     public function index()
     {
-        $transactions = $this->transactionService->getTransactions();
+        $transactions = $this->transactionService->getAllTransactions();
 
         return response()->json([
             'status' => 200,
@@ -29,6 +29,16 @@ class TransactionController extends Controller
         ], 200);
     }
 
+    public function getCompleteTransactions()
+    {
+        $transactions = $this->transactionService->getCompleteTransactions();
+
+        return response()->json([
+            'status' => 200,
+            'message' => "Complete Transactions Fetched Successfully",
+            'transactions' => $transactions,
+        ], 200);
+    }
     public function getOngoingTransactions()
     {
         $transactions = $this->transactionService->getOngoingTransactions();

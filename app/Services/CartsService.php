@@ -23,7 +23,6 @@ class CartsService
             return $cartItem;
         }
 
-        // Otherwise, create a new cart entry
         return Cart::create([
             'user_id' => $userId,
             'item_id' => $itemId,

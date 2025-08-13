@@ -90,7 +90,8 @@ class ItemsController extends Controller
 
     public function generateItemStickers()
     {
-        $pdfPath = $this->itemsService->generateItemStickers();
+        $selectedIds = request()->input('ids', []);
+        $pdfPath = $this->itemsService->generateItemStickers($selectedIds);
 
         if (!file_exists($pdfPath)) {
             abort(500, 'PDF file was not generated');

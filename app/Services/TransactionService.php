@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\ReturnItems;
+use App\Events\TransactionCreated;
 use Exception;
 use Carbon\Carbon;
 use App\Models\Cart;
@@ -19,11 +21,18 @@ class TransactionService
 {
     public function getOngoingTransactions()
     {
-        $transactions = Transactions::with('user')->where('status', 'Checkout')->get();
+        $transactions = Transactions::with('user')->where('status', 'Checkout')->orderBy('created_at', 'desc')->get();
 
         return $transactions;
     }
-    public function getTransactions()
+    public function getCompleteTransactions()
+    {
+        $transactions = Transactions::with('user')->where('status', 'Returned')->orderBy('created_at', 'desc')->get();
+
+        return $transactions;
+    }
+
+    public function getAllTransactions()
     {
         $transactions = Transactions::with('user')->orderBy('created_at', 'desc')->get();
 
@@ -75,7 +84,11 @@ class TransactionService
                 $cartItem->delete();
             }
 
+
             DB::commit();
+
+            broadcast(new TransactionCreated($transaction));
+
             return $transaction;
         } catch (Exception $e) {
             DB::rollBack();
@@ -138,6 +151,8 @@ class TransactionService
             $transaction->save();
 
             DB::commit();
+
+            broadcast(new ReturnItems($transaction));
 
             return $transaction;
         } catch (Exception $e) {

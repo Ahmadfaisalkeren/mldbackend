@@ -6,8 +6,8 @@ use App\Http\Controllers\API\CartsController;
 use App\Http\Controllers\API\ItemsController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\HomeController;
+use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\TransactionController;
-
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/{id}', [AuthController::class, 'user']);
@@ -29,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/item/{id}', [ItemsController::class, 'destroy']);
 
     Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::get('/transactions/complete', [TransactionController::class, 'getCompleteTransactions']);
     Route::get('/transactions/ongoing', [TransactionController::class, 'getOngoingTransactions']);
     Route::post('/transaction/checkout', [TransactionController::class, 'checkout']);
     Route::get('/transaction/{id}', [TransactionController::class, 'showTransactionDetails']);
@@ -37,4 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartsController::class, 'getCartItems']);
     Route::delete('/cart/{id}', [CartsController::class, 'removeFromCart']);
     Route::get('home/totals', [HomeController::class, 'getTotals']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::put('/notification/markAllAsRead', [NotificationController::class, 'markAllAsRead']);
 });

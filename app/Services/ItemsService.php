@@ -179,9 +179,12 @@ class ItemsService
         return $pdfPath;
     }
 
-    public function generateItemStickers()
+    public function generateItemStickers(array $selectedIds = [])
     {
-        $items = Items::with('category')->latest()->get();
+        $items = Items::with('category')
+            ->when($selectedIds, fn($query) => $query->whereIn('id', $selectedIds))
+            ->latest()
+            ->get();
 
         $html = view('items/item_stickers', compact('items'))->render();
 

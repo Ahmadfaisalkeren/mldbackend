@@ -1,31 +1,30 @@
-name: Deploy Laravel to Docker Server
+name: Deploy Laravel Backend
 on:
   push:
     branches:
       - main
+
 jobs:
-  deploy:
+  sync-env:
     runs-on: ubuntu-latest
     steps:
-      - name: Connect to VPS
+      - name: Sync .env from Secrets
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            PROJECT_PATH="/var/www/mld/mldbackend"
+            echo "Updating .env file on server..."
+            cd /var/www/mld/mldbackend
+            echo "${{ secrets.LARAVEL_ENV_FILE }}" > .env
+            echo ".env updated."
 
-            if [ -d "$PROJECT_PATH/.git" ]; then
-              cd $PROJECT_PATH
-              echo "Project exists, performing update..."
-            else
-              rm -rf $PROJECT_PATH
-              git clone -b main https://github.com/Ahmadfaisalkeren/mldbackend.git $PROJECT_PATH
-              cd $PROJECT_PATH
-            fi
-
-      - name: Pull Latest Changes
+  deploy:
+    needs: sync-env
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Latest Code
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -34,117 +33,24 @@ jobs:
           script: |
             cd /var/www/mld/mldbackend
             git pull origin main
-
-      - name: Setup Environment File
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
-            if [ ! -f .env ]; then
-              cp .env.example .env
-              sed -i "s|APP_KEY=.*|APP_KEY=${{ secrets.APP_KEY }}|" .env
-              sed -i "s|DB_HOST=.*|DB_HOST=global_mysql|" .env
-              sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" .env
-              sed -i '/^DB_PASSWORD=/p; s/^DB_PASSWORD=/DB_ROOT_PASSWORD=/' .env
-              sed -i "s|APP_DEBUG=.*|APP_DEBUG=false|" .env
-            fi
-
-      - name: Build Docker Services
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
             docker compose up -d --build
-
-            - name: Verify Services
-            uses: appleboy/ssh-action@v0.1.10
-            with:
-              host: ${{ secrets.VPS_HOST }}
-              username: ${{ secrets.VPS_USERNAME }}
-              key: ${{ secrets.VPS_SSH_KEY }}
-              script: |
-                cd /var/www/mld/mldbackend
-                echo "Checking container statuses..."
-                docker ps | grep global_mysql
-                docker ps | grep mldbackend
-
-                echo "Verifying network connectivity..."
-                docker exec mldbackend ping -c 2 global_mysql
-
-                echo "Testing MySQL connection..."
-                docker exec global_mysql mysqladmin ping -h localhost -u root -p${{ secrets.DB_PASSWORD }}
-
-      - name: Create Database if Not Exists
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            docker exec -i global_mysql mysql -u root -p${{ secrets.DB_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS mldbackend;"
-
-      - name: Wait for Database
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
-            counter=0
-            max_retries=15
-            until docker exec global_mysql mysql -u root -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" 2>/dev/null; do
-              counter=$((counter + 1))
-              [ $counter -eq $max_retries ] && exit 1
-              echo "Waiting for database... Attempt $counter/$max_retries"
-              sleep 5
-            done
-
-      - name: Generate Application Key
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
-            docker compose exec -T mldbackend php artisan key:generate
-
-      - name: Run Database Migrations
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan migrate --force
-
-      - name: Create Storage Link
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
-            docker compose exec -T mldbackend php artisan storage:link
-
-      - name: Clear Application Cache
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan optimize:clear
-            docker compose exec -T mldbackend php artisan config:clear
-            docker compose exec -T mldbackend php artisan cache:clear
             docker compose exec -T mldbackend php artisan config:cache
+
+  init:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Initialization Tasks
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/mld/mldbackend
+            echo "Running initialization tasks..."
+            docker compose exec -T mldbackend php artisan storage:link
+            docker compose exec -T mldbackend php artisan optimize:clear
+            echo "Initialization complete."
