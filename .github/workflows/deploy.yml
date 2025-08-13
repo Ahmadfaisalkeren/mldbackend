@@ -14,7 +14,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            PROJECT_PATH="/var/www/docker/mldbackend"
+            PROJECT_PATH="/var/www/mld/mldbackend"
 
             if [ -d "$PROJECT_PATH/.git" ]; then
               cd $PROJECT_PATH
@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             git pull origin main
 
       - name: Setup Environment File
@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             if [ ! -f .env ]; then
               cp .env.example .env
               sed -i "s|APP_KEY=.*|APP_KEY=${{ secrets.APP_KEY }}|" .env
@@ -73,7 +73,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             docker compose up -d --build
 
             - name: Verify Services
@@ -83,7 +83,7 @@ jobs:
               username: ${{ secrets.VPS_USERNAME }}
               key: ${{ secrets.VPS_SSH_KEY }}
               script: |
-                cd /var/www/docker/mldbackend
+                cd /var/www/mld/mldbackend
                 echo "Checking container statuses..."
                 docker ps | grep mysql_server
                 docker ps | grep mldbackend
@@ -110,7 +110,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             counter=0
             max_retries=15
             until docker exec mysql_server mysql -u root -p${{ secrets.DB_PASSWORD }} -e "SELECT 1;" 2>/dev/null; do
@@ -127,7 +127,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan key:generate
 
       - name: Run Database Migrations
@@ -137,7 +137,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan migrate --force
 
       - name: Create Storage Link
@@ -147,7 +147,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan storage:link
 
       - name: Clear Application Cache
@@ -157,7 +157,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /var/www/docker/mldbackend
+            cd /var/www/mld/mldbackend
             docker compose exec -T mldbackend php artisan optimize:clear
             docker compose exec -T mldbackend php artisan config:clear
             docker compose exec -T mldbackend php artisan cache:clear
