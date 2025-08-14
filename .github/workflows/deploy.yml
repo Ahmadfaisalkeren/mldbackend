@@ -1,4 +1,4 @@
-name: Deploy MLD Backend to Docker Server
+name: Deploy MLDA Backend to Docker Server
 on:
   push:
     branches:
