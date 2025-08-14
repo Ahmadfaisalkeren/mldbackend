@@ -49,7 +49,6 @@ jobs:
               sed -i "s|DB_HOST=.*|DB_HOST=global_mysql|" .env
               sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${{ secrets.DB_PASSWORD }}|" .env
               sed -i '/^DB_PASSWORD=/p; s/^DB_PASSWORD=/DB_ROOT_PASSWORD=/' .env
-              sed -i "s|APP_DEBUG=.*|APP_DEBUG=true|" .env
               sed -i "s|^BROADCAST_CONNECTION=.*|BROADCAST_CONNECTION=pusher|" .env
 
               sed -i "s|^PUSHER_APP_ID=.*|PUSHER_APP_ID=${{ secrets.PUSHER_APP_ID }}|" .env || echo "PUSHER_APP_ID=${{ secrets.PUSHER_APP_ID }}" >> .env
